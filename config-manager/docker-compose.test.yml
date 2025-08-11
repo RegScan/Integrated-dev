@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # 测试用PostgreSQL数据库
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: postgres-test
+    environment:
+      - POSTGRES_DB=config_manager_test
+      - POSTGRES_USER=test_user
+      - POSTGRES_PASSWORD=test_password
+    ports:
+      - "5433:5432"  # 使用不同端口避免冲突
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    networks:
+      - test-network
+
+  # 测试用Redis缓存
+  redis-test:
+    image: redis:7-alpine
+    container_name: redis-test
+    command: redis-server --appendonly yes
+    ports:
+      - "6380:6379"  # 使用不同端口避免冲突
+    volumes:
+      - redis_test_data:/data
+    networks:
+      - test-network
+
+  # 配置管理服务测试实例
+  config-manager-test:
+    build: .
+    container_name: config-manager-test
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://test_user:test_password@postgres-test:5432/config_manager_test
+      - REDIS_URL=redis://redis-test:6379/0
+      - SECRET_KEY=test-secret-key-for-testing-only
+      - ENVIRONMENT=test
+      - LOG_LEVEL=DEBUG
+    depends_on:
+      - postgres-test
+      - redis-test
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./configs:/app/configs
+    networks:
+      - test-network
+    command: ["python", "-m", "pytest", "tests/", "-v", "--tb=short"]
+
+volumes:
+  postgres_test_data:
+  redis_test_data:
+
+networks:
+  test-network:
+    driver: bridge 

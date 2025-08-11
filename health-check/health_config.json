@@ -1,0 +1,179 @@
+{
+  "services": [
+    {
+      "name": "config-manager",
+      "url": "http://config-manager",
+      "port": 8001,
+      "health_endpoint": "/health",
+      "timeout": 10,
+      "interval": 30,
+      "max_failures": 3,
+      "dependencies": ["mongodb", "redis"],
+      "critical": true,
+      "auto_restart": true,
+      "restart_command": "docker restart config-manager"
+    },
+    {
+      "name": "website-scanner",
+      "url": "http://website-scanner",
+      "port": 8002,
+      "health_endpoint": "/health",
+      "timeout": 15,
+      "interval": 30,
+      "max_failures": 3,
+      "dependencies": ["config-manager", "rabbitmq"],
+      "critical": true,
+      "auto_restart": true,
+      "restart_command": "docker restart website-scanner"
+    },
+    {
+      "name": "alert-handler",
+      "url": "http://alert-handler",
+      "port": 8003,
+      "health_endpoint": "/health",
+      "timeout": 10,
+      "interval": 30,
+      "max_failures": 3,
+      "dependencies": ["config-manager", "rabbitmq"],
+      "critical": true,
+      "auto_restart": true,
+      "restart_command": "docker restart alert-handler"
+    },
+    {
+      "name": "task-scheduler",
+      "url": "http://task-scheduler",
+      "port": 8004,
+      "health_endpoint": "/health",
+      "timeout": 10,
+      "interval": 30,
+      "max_failures": 3,
+      "dependencies": ["config-manager", "rabbitmq"],
+      "critical": true,
+      "auto_restart": true,
+      "restart_command": "docker restart task-scheduler"
+    },
+    {
+      "name": "web-admin",
+      "url": "http://web-admin",
+      "port": 8080,
+      "health_endpoint": "/",
+      "timeout": 10,
+      "interval": 60,
+      "max_failures": 5,
+      "dependencies": [],
+      "critical": false,
+      "auto_restart": true,
+      "restart_command": "docker restart web-admin"
+    },
+    {
+      "name": "mongodb",
+      "url": "http://mongodb",
+      "port": 27017,
+      "health_endpoint": "/",
+      "timeout": 5,
+      "interval": 60,
+      "max_failures": 3,
+      "dependencies": [],
+      "critical": true,
+      "auto_restart": false
+    },
+    {
+      "name": "redis",
+      "url": "http://redis",
+      "port": 6379,
+      "health_endpoint": "/",
+      "timeout": 5,
+      "interval": 60,
+      "max_failures": 3,
+      "dependencies": [],
+      "critical": true,
+      "auto_restart": false
+    },
+    {
+      "name": "rabbitmq",
+      "url": "http://rabbitmq",
+      "port": 15672,
+      "health_endpoint": "/api/health/checks/virtual-hosts",
+      "timeout": 10,
+      "interval": 60,
+      "max_failures": 3,
+      "dependencies": [],
+      "critical": true,
+      "auto_restart": false
+    },
+    {
+      "name": "elasticsearch",
+      "url": "http://elasticsearch",
+      "port": 9200,
+      "health_endpoint": "/_cluster/health",
+      "timeout": 10,
+      "interval": 60,
+      "max_failures": 3,
+      "dependencies": [],
+      "critical": false,
+      "auto_restart": false
+    },
+    {
+      "name": "nginx",
+      "url": "http://nginx",
+      "port": 80,
+      "health_endpoint": "/health",
+      "timeout": 5,
+      "interval": 30,
+      "max_failures": 3,
+      "dependencies": [],
+      "critical": true,
+      "auto_restart": true,
+      "restart_command": "docker restart nginx"
+    }
+  ],
+  "alerts": {
+    "smtp_server": "smtp.example.com",
+    "smtp_port": 587,
+    "smtp_user": "alerts@example.com",
+    "smtp_password": "your_password_here",
+    "alert_recipients": [
+      "admin@example.com",
+      "ops@example.com"
+    ],
+    "webhook_url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+    "alert_intervals": {
+      "critical": 300,
+      "error": 600,
+      "warning": 1800,
+      "info": 3600
+    },
+    "escalation_rules": {
+      "critical_services": {
+        "max_downtime_minutes": 5,
+        "escalation_recipients": [
+          "manager@example.com",
+          "cto@example.com"
+        ]
+      }
+    }
+  },
+  "monitoring": {
+    "data_retention_days": 30,
+    "metrics_collection_interval": 60,
+    "performance_thresholds": {
+      "response_time_warning": 1.0,
+      "response_time_critical": 5.0,
+      "uptime_warning": 95.0,
+      "uptime_critical": 90.0
+    },
+    "auto_recovery": {
+      "enabled": true,
+      "max_restart_attempts": 3,
+      "restart_cooldown_minutes": 10,
+      "circuit_breaker_threshold": 5
+    }
+  },
+  "dashboard": {
+    "refresh_interval": 30,
+    "chart_time_ranges": ["1h", "6h", "24h", "7d", "30d"],
+    "default_time_range": "24h",
+    "alert_sound_enabled": true,
+    "auto_refresh_enabled": true
+  }
+}

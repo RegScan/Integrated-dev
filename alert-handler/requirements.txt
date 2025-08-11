@@ -1,0 +1,58 @@
+# Web框架
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# 数据库
+sqlalchemy==2.0.23
+alembic==1.12.1
+psycopg2-binary==2.9.9  # PostgreSQL
+PyMySQL==1.1.0  # MySQL
+
+# 异步任务
+celery==5.3.4
+redis==5.0.1
+
+# HTTP客户端
+aiohttp==3.9.1
+requests==2.32.3
+charset-normalizer==3.3.2
+
+# 数据验证
+pydantic==2.8.0
+pydantic-settings==2.4.0
+
+# 通知服务
+twilio==8.10.3  # SMS
+jinja2==3.1.2  # 模板引擎
+
+# 工单系统集成
+jira==3.5.2
+
+# 阿里云SDK
+alibabacloud-dysmsapi20170525==3.0.0
+alibabacloud-tea-openapi>=0.3.10
+
+# 系统监控
+psutil==5.9.6
+
+# 日志
+loguru==0.7.2
+
+# 配置管理
+python-dotenv==1.0.0
+
+# 时间处理
+python-dateutil==2.8.2
+
+# 加密
+cryptography==41.0.7
+
+# 开发工具
+pytest==7.4.3
+pytest-asyncio==0.21.1
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.1
+
+# 生产环境
+gunicorn==21.2.0

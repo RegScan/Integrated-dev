@@ -1,0 +1,186 @@
+// 过渡动画样式
+
+// 淡入淡出
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+// 滑动淡入淡出
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+// 缩放淡入淡出
+.fade-scale-enter-active,
+.fade-scale-leave-active {
+  transition: all 0.3s;
+}
+
+.fade-scale-enter-from,
+.fade-scale-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+// 向上滑动
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s;
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+// 向下滑动
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+// 展开收起
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: height 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  height: 0;
+}
+
+// 旋转
+.rotate-enter-active,
+.rotate-leave-active {
+  transition: all 0.3s;
+}
+
+.rotate-enter-from {
+  opacity: 0;
+  transform: rotate(-180deg);
+}
+
+.rotate-leave-to {
+  opacity: 0;
+  transform: rotate(180deg);
+}
+
+// 列表过渡
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.list-move {
+  transition: transform 0.3s;
+}
+
+// 抖动动画
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-10px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(10px);
+  }
+}
+
+.shake {
+  animation: shake 0.5s;
+}
+
+// 脉冲动画
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.pulse {
+  animation: pulse 1s infinite;
+}
+
+// 旋转加载动画
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+// 波纹效果
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.ripple {
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    animation: ripple 0.6s;
+  }
+}

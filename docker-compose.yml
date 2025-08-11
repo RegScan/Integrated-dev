@@ -1,0 +1,342 @@
+# Docker Compose配置文件 - 移除version声明以避免警告
+
+services:
+  # API 网关 (统一入口)
+  api-gateway:
+    image: nginx:alpine
+    container_name: api-gateway
+    ports:
+      - "8080:8080"  # 主要API入口
+      - "8081:8081"  # 开发模式入口
+    volumes:
+      - ./api-gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./api-gateway/proxy_params:/etc/nginx/proxy_params:ro
+    depends_on:
+      - config-manager
+      - website-scanner
+      - alert-handler
+      - task-scheduler
+      - web-admin
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Web 管理后台
+  web-admin:
+    build: 
+      context: ./web-admin
+      dockerfile: Dockerfile
+    container_name: web-admin
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_BASE_URL=/api
+    volumes:
+      - ./web-admin/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 配置管理服务
+  config-manager:
+    build: 
+      context: ./config-manager
+      dockerfile: Dockerfile
+    container_name: config-manager
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./data/config.db
+      - SECRET_KEY=your-secret-key-here
+      - DEBUG=false
+    volumes:
+      - ./config-manager/data:/app/data
+      - ./config-manager/configs:/app/configs
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 网站扫描服务
+  website-scanner:
+    build:
+      context: ./website-scanner
+      dockerfile: Dockerfile
+    container_name: website-scanner
+    ports:
+      - "8001:8001"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017/website_scanner
+      - REDIS_URL=redis://redis:6379/1
+      - DEBUG=false
+      - MAX_CONCURRENT_SCANS=5
+      - MEMORY_MAX_PERCENT=80.0
+      - BROWSER_MAX_MEMORY_MB=512
+      - BROWSER_MAX_IMAGES=3
+      - BROWSER_MAX_TEXT_LENGTH=10000
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - ./website-scanner/logs:/app/logs
+      - ./website-scanner/data:/app/data
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 告警处理服务
+  alert-handler:
+    build:
+      context: ./alert-handler
+      dockerfile: Dockerfile
+    container_name: alert-handler
+    ports:
+      - "8002:8002"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/alert_db
+      - REDIS_URL=redis://redis:6379/2
+      - EMAIL_SMTP_SERVER=smtp.example.com
+      - EMAIL_SMTP_PORT=587
+      - EMAIL_USERNAME=alert@example.com
+      - EMAIL_PASSWORD=your-email-password
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./alert-handler/templates:/app/templates
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 任务调度服务
+  task-scheduler:
+    build:
+      context: ./task-scheduler
+      dockerfile: Dockerfile
+    container_name: task-scheduler
+    ports:
+      - "8003:8003"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/3
+      - CELERY_RESULT_BACKEND=redis://redis:6379/3
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/task_db
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MongoDB 数据库
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=website_scanner
+    volumes:
+      - mongodb_data:/data/db
+      - ./website-scanner/tests/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 1gb --maxmemory-policy allkeys-lru --save 900 1 --save 300 10 --save 60 10000
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-postgres.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 监控服务 - Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+
+  # 监控服务 - Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3001:3000"  # 避免与web-admin端口冲突
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - prometheus
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+
+  # 健康检查服务
+  health-check:
+    build:
+      context: ./health-check
+      dockerfile: Dockerfile
+    container_name: health-check
+    ports:
+      - "8090:8090"
+    environment:
+      - CHECK_INTERVAL=30
+      - ALERT_WEBHOOK_URL=http://alert-handler:8002/api/v1/webhook/health
+    volumes:
+      - ./health-check/health_config.json:/app/config.json:ro
+    depends_on:
+      - api-gateway
+      - config-manager
+      - website-scanner
+      - alert-handler
+      - task-scheduler
+    networks:
+      - app-network
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+  redis_data:
+  postgres_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  app-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

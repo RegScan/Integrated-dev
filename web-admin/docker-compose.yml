@@ -1,0 +1,27 @@
+# Web Admin独立部署配置
+
+services:
+  web-admin:
+    build: .
+    container_name: web-admin
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_BASE_URL=http://api-gateway:8080/api
+    networks:
+      - app-network
+    restart: unless-stopped
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  app-network:
+    external: true
+    name: 7-21-demo_app-network

@@ -1,0 +1,37 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'config-manager'
+    static_configs:
+      - targets: ['config-manager:8000']
+    metrics_path: '/metrics'
+
+  - job_name: 'website-scanner'
+    static_configs:
+      - targets: ['website-scanner:8001']
+    metrics_path: '/metrics'
+
+  - job_name: 'alert-handler'
+    static_configs:
+      - targets: ['alert-handler:8002']
+    metrics_path: '/metrics'
+
+  - job_name: 'task-scheduler'
+    static_configs:
+      - targets: ['task-scheduler:8003']
+    metrics_path: '/metrics'
+
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['api-gateway:8080']
+    metrics_path: '/metrics' 

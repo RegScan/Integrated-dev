@@ -1,0 +1,100 @@
+# 生产环境配置文件模板
+# 复制此文件为 production.yaml 并填入实际配置
+
+# 服务配置（生产环境优化）
+services:
+  config_manager:
+    debug: false
+    
+  website_scanner:
+    max_concurrent_scans: 20
+    scan_timeout: 600
+    
+  alert_handler:
+    notification_timeout: 60
+    
+  task_scheduler:
+    worker_concurrency: 8
+
+# 数据库配置（生产环境集群）
+database:
+  # MongoDB配置
+  mongodb:
+    host: "mongodb-cluster.internal"
+    port: 27017
+    database: "compliance_prod"
+    username: "${MONGODB_USERNAME}"
+    password: "${MONGODB_PASSWORD}"
+    replica_set: "rs0"
+    auth_source: "admin"
+    
+  # Redis配置
+  redis:
+    host: "redis-cluster.internal"
+    port: 6379
+    database: 0
+    password: "${REDIS_PASSWORD}"
+    sentinel_hosts: ["redis-sentinel-1:26379", "redis-sentinel-2:26379", "redis-sentinel-3:26379"]
+    
+  # PostgreSQL配置
+  postgresql:
+    host: "postgres.internal"
+    port: 5432
+    database: "compliance_config"
+    username: "${POSTGRES_USERNAME}"
+    password: "${POSTGRES_PASSWORD}"
+    pool_size: 20
+    max_overflow: 30
+
+# 第三方API配置（使用环境变量）
+api_keys:
+  content_check: "${CONTENT_API_KEY}"
+  beian_query: "${BEIAN_API_KEY}"
+  sms_service: "${SMS_API_KEY}"
+  email_service: "${EMAIL_API_KEY}"
+
+# 扫描配置（生产环境高性能）
+scanner:
+  crawler:
+    max_depth: 5
+    max_pages: 200
+    concurrent_requests: 10
+    request_delay: 2
+    timeout: 60
+    
+  content_check:
+    text_check_enabled: true
+    image_check_enabled: true
+    sensitive_words_file: "/app/data/sensitive_words.txt"
+    
+  beian_check:
+    enabled: true
+    cache_ttl: 86400
+    batch_size: 10
+
+# 告警配置（生产环境多渠道）
+alerts:
+  channels:
+    email:
+      enabled: true
+      smtp_host: "${SMTP_HOST}"
+      smtp_port: 587
+      username: "${SMTP_USERNAME}"
+      password: "${SMTP_PASSWORD}"
+      use_tls: true
+      
+    sms:
+      enabled: true
+      provider: "aliyun"
+      access_key: "${SMS_ACCESS_KEY}"
+      secret_key: "${SMS_SECRET_KEY}"
+      
+    webhook:
+      enabled: true
+      url: "${WEBHOOK_URL}"
+      secret: "${WEBHOOK_SECRET}"
+      
+  rules:
+    high_risk_threshold: 85
+    medium_risk_threshold: 65
+    low_risk_threshold: 35 

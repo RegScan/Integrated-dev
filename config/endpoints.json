@@ -1,0 +1,393 @@
+{
+  "description": "内容合规检测系统 - 服务端点配置",
+  "version": "1.0.0",
+  "last_updated": "2024-12-19",
+  
+  "environments": {
+    "development": {
+      "description": "开发环境配置",
+      "base_domain": "localhost",
+      "protocol": "http"
+    },
+    "production": {
+      "description": "生产环境配置",
+      "base_domain": "your-domain.com",
+      "protocol": "https"
+    }
+  },
+  
+  "services": {
+    "config-manager": {
+      "name": "配置管理服务",
+      "description": "系统配置和用户认证管理",
+      "port": 8000,
+      "health_check": "/health",
+      "api_prefix": "/api/v1",
+      "endpoints": {
+        "root": {
+          "path": "/",
+          "method": "GET",
+          "description": "服务根路径",
+          "public": true
+        },
+        "health": {
+          "path": "/health",
+          "method": "GET",
+          "description": "健康检查",
+          "public": true
+        },
+        "config_list": {
+          "path": "/api/v1/config",
+          "method": "GET",
+          "description": "获取配置列表",
+          "auth_required": true
+        },
+        "config_create": {
+          "path": "/api/v1/config",
+          "method": "POST",
+          "description": "创建配置",
+          "auth_required": true
+        },
+        "config_detail": {
+          "path": "/api/v1/config/{config_id}",
+          "method": "GET",
+          "description": "获取配置详情",
+          "auth_required": true
+        },
+        "config_update": {
+          "path": "/api/v1/config/{config_id}",
+          "method": "PUT",
+          "description": "更新配置",
+          "auth_required": true
+        },
+        "config_delete": {
+          "path": "/api/v1/config/{config_id}",
+          "method": "DELETE",
+          "description": "删除配置",
+          "auth_required": true
+        },
+        "auth_login": {
+          "path": "/api/v1/auth/login",
+          "method": "POST",
+          "description": "用户登录",
+          "public": true
+        },
+        "auth_logout": {
+          "path": "/api/v1/auth/logout",
+          "method": "POST",
+          "description": "用户登出",
+          "auth_required": true
+        },
+        "auth_refresh": {
+          "path": "/api/v1/auth/refresh",
+          "method": "POST",
+          "description": "刷新令牌",
+          "auth_required": true
+        },
+        "users_list": {
+          "path": "/api/v1/users",
+          "method": "GET",
+          "description": "获取用户列表",
+          "auth_required": true
+        },
+        "users_create": {
+          "path": "/api/v1/users",
+          "method": "POST",
+          "description": "创建用户",
+          "auth_required": true
+        },
+        "users_detail": {
+          "path": "/api/v1/users/{user_id}",
+          "method": "GET",
+          "description": "获取用户详情",
+          "auth_required": true
+        }
+      }
+    },
+    
+    "website-scanner": {
+      "name": "网站扫描服务",
+      "description": "网站内容扫描和分析",
+      "port": 8001,
+      "health_check": "/health",
+      "api_prefix": "/api/v1",
+      "endpoints": {
+        "root": {
+          "path": "/",
+          "method": "GET",
+          "description": "服务根路径",
+          "public": true
+        },
+        "health": {
+          "path": "/health",
+          "method": "GET",
+          "description": "健康检查",
+          "public": true
+        },
+        "scan_domain": {
+          "path": "/api/v1/scan/{domain}",
+          "method": "POST",
+          "description": "扫描指定域名",
+          "auth_required": true
+        },
+        "results_list": {
+          "path": "/api/v1/results",
+          "method": "GET",
+          "description": "获取扫描结果列表",
+          "auth_required": true
+        },
+        "results_detail": {
+          "path": "/api/v1/results/{result_id}",
+          "method": "GET",
+          "description": "获取扫描结果详情",
+          "auth_required": true
+        },
+        "results_delete": {
+          "path": "/api/v1/results/{result_id}",
+          "method": "DELETE",
+          "description": "删除扫描结果",
+          "auth_required": true
+        },
+        "results_export": {
+          "path": "/api/v1/results/{result_id}/export",
+          "method": "GET",
+          "description": "导出扫描结果",
+          "auth_required": true
+        },
+        "statistics_overview": {
+          "path": "/api/v1/results/statistics/overview",
+          "method": "GET",
+          "description": "获取扫描统计概览",
+          "auth_required": true
+        },
+        "history_list": {
+          "path": "/api/v1/results/history",
+          "method": "GET",
+          "description": "获取扫描历史",
+          "auth_required": true
+        }
+      }
+    },
+    
+    "alert-handler": {
+      "name": "告警处理服务",
+      "description": "告警管理和通知处理",
+      "port": 8002,
+      "health_check": "/health",
+      "api_prefix": "/api/v1",
+      "endpoints": {
+        "root": {
+          "path": "/",
+          "method": "GET",
+          "description": "服务根路径",
+          "public": true
+        },
+        "health": {
+          "path": "/health",
+          "method": "GET",
+          "description": "健康检查",
+          "public": true
+        },
+        "alerts_list": {
+          "path": "/api/v1/alerts",
+          "method": "GET",
+          "description": "获取告警列表",
+          "auth_required": true
+        },
+        "alerts_create": {
+          "path": "/api/v1/alerts",
+          "method": "POST",
+          "description": "创建告警",
+          "auth_required": true
+        },
+        "alerts_detail": {
+          "path": "/api/v1/alerts/{alert_id}",
+          "method": "GET",
+          "description": "获取告警详情",
+          "auth_required": true
+        },
+        "alerts_update": {
+          "path": "/api/v1/alerts/{alert_id}",
+          "method": "PUT",
+          "description": "更新告警",
+          "auth_required": true
+        },
+        "alerts_delete": {
+          "path": "/api/v1/alerts/{alert_id}",
+          "method": "DELETE",
+          "description": "删除告警",
+          "auth_required": true
+        },
+        "statistics_overview": {
+          "path": "/api/v1/alerts/statistics/overview",
+          "method": "GET",
+          "description": "获取告警统计概览",
+          "auth_required": true
+        },
+        "actions_list": {
+          "path": "/api/v1/actions",
+          "method": "GET",
+          "description": "获取处理动作列表",
+          "auth_required": true
+        },
+        "actions_create": {
+          "path": "/api/v1/actions",
+          "method": "POST",
+          "description": "创建处理动作",
+          "auth_required": true
+        }
+      }
+    },
+    
+    "task-scheduler": {
+      "name": "任务调度服务",
+      "description": "基于Celery的异步任务调度",
+      "port": null,
+      "type": "celery",
+      "health_check": null,
+      "note": "该服务使用Celery进行任务调度，不提供HTTP API端点",
+      "tasks": {
+        "run_single_scan": {
+          "description": "执行单个网站扫描任务",
+          "queue": "scan_queue"
+        },
+        "run_batch_scan": {
+          "description": "执行批量网站扫描任务",
+          "queue": "scan_queue"
+        },
+        "cleanup_old_results": {
+          "description": "清理过期扫描结果",
+          "queue": "maintenance_queue"
+        },
+        "send_alert_notifications": {
+          "description": "发送告警通知",
+          "queue": "alert_queue"
+        }
+      }
+    },
+    
+    "web-admin": {
+      "name": "Web管理界面",
+      "description": "React前端管理界面",
+      "port": 3000,
+      "type": "frontend",
+      "health_check": "/",
+      "endpoints": {
+        "root": {
+          "path": "/",
+          "method": "GET",
+          "description": "首页",
+          "public": true
+        },
+        "login": {
+          "path": "/login",
+          "method": "GET",
+          "description": "登录页面",
+          "public": true
+        },
+        "dashboard": {
+          "path": "/dashboard",
+          "method": "GET",
+          "description": "仪表板",
+          "auth_required": true
+        },
+        "config": {
+          "path": "/config",
+          "method": "GET",
+          "description": "配置管理页面",
+          "auth_required": true
+        },
+        "scan": {
+          "path": "/scan",
+          "method": "GET",
+          "description": "扫描管理页面",
+          "auth_required": true
+        },
+        "alerts": {
+          "path": "/alerts",
+          "method": "GET",
+          "description": "告警管理页面",
+          "auth_required": true
+        },
+        "users": {
+          "path": "/users",
+          "method": "GET",
+          "description": "用户管理页面",
+          "auth_required": true
+        }
+      }
+    }
+  },
+  
+  "dependencies": {
+    "mongodb": {
+      "name": "MongoDB数据库",
+      "description": "主数据库存储",
+      "port": 27017,
+      "protocol": "mongodb",
+      "health_check": "ping"
+    },
+    "redis": {
+      "name": "Redis缓存",
+      "description": "缓存和会话存储",
+      "port": 6379,
+      "protocol": "redis",
+      "health_check": "ping"
+    },
+    "rabbitmq": {
+      "name": "RabbitMQ消息队列",
+      "description": "异步任务消息队列",
+      "port": 5672,
+      "management_port": 15672,
+      "protocol": "amqp",
+      "health_check": "connection"
+    },
+    "elasticsearch": {
+      "name": "Elasticsearch搜索引擎",
+      "description": "日志存储和搜索",
+      "port": 9200,
+      "protocol": "http",
+      "health_check": "/_cluster/health"
+    }
+  },
+  
+  "monitoring": {
+    "prometheus": {
+      "name": "Prometheus监控",
+      "port": 9090,
+      "endpoints": {
+        "metrics": "/metrics",
+        "targets": "/targets",
+        "config": "/config"
+      }
+    },
+    "grafana": {
+      "name": "Grafana仪表板",
+      "port": 3001,
+      "endpoints": {
+        "login": "/login",
+        "dashboard": "/d",
+        "api": "/api"
+      }
+    }
+  },
+  
+  "testing": {
+    "test_data": {
+      "test_domain": "example.com",
+      "test_user": {
+        "username": "test",
+        "password": "test123"
+      },
+      "test_config": {
+        "name": "test_config",
+        "description": "测试配置"
+      }
+    },
+    "timeouts": {
+      "connection": 5,
+      "read": 10,
+      "total": 30
+    }
+  }
+}

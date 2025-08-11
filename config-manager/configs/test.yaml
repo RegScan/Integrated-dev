@@ -1,0 +1,80 @@
+# 测试环境配置
+environment: test
+
+# 数据库配置
+database:
+  host: "postgres-test"
+  port: 5432
+  name: "config_manager_test"
+  user: "test_user"
+  password: "test_password"
+
+# Redis配置
+redis:
+  host: "redis-test"
+  port: 6379
+  db: 0
+
+# API配置
+api:
+  content_check: "test_content_api_key"
+  beian_query: "test_beian_api_key"
+  email_service: "test_email_api_key"
+  sms_service: "test_sms_api_key"
+
+# 服务配置
+services:
+  config_manager:
+    host: "0.0.0.0"
+    port: 8000
+    debug: true
+    log_level: "DEBUG"
+
+  website_scanner:
+    host: "localhost"
+    port: 8001
+    timeout: 30
+
+  alert_handler:
+    host: "localhost"
+    port: 8002
+    timeout: 30
+
+# 测试数据
+test_data:
+  sample_configs:
+    - key: "test.database.host"
+      value: "localhost"
+      category: "database"
+      environment: "test"
+      is_encrypted: false
+      is_sensitive: false
+      description: "测试数据库主机"
+    
+    - key: "test.api.key"
+      value: "test-api-key-123"
+      category: "api"
+      environment: "test"
+      is_encrypted: true
+      is_sensitive: true
+      description: "测试API密钥"
+    
+    - key: "test.service.timeout"
+      value: "30"
+      category: "service"
+      environment: "test"
+      is_encrypted: false
+      is_sensitive: false
+      description: "测试服务超时时间"
+
+# 加密配置
+encryption:
+  enabled: true
+  algorithm: "fernet"
+  key_rotation_days: 30
+
+# 日志配置
+logging:
+  level: "DEBUG"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/config-manager-test.log" 

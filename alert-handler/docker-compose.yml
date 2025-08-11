@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  # 告警处理API服务
+  alert-handler:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/alert_handler
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - alert-network
+
+  # Celery Worker服务
+  celery-worker:
+    build: .
+    command: celery -A app.tasks.alert_tasks worker --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/alert_handler
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - alert-network
+
+  # Celery Beat调度服务
+  celery-beat:
+    build: .
+    command: celery -A app.tasks.alert_tasks beat --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/alert_handler
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - alert-network
+
+  # Celery Flower监控服务
+  celery-flower:
+    build: .
+    command: celery -A app.tasks.alert_tasks flower --port=5555
+    ports:
+      - "5555:5555"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/alert_handler
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - alert-network
+
+  # PostgreSQL数据库
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=alert_handler
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - alert-network
+
+  # Redis缓存和消息队列
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - alert-network
+
+  # Nginx反向代理
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - alert-handler
+    restart: unless-stopped
+    networks:
+      - alert-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  alert-network:
+    driver: bridge

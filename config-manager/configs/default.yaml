@@ -1,0 +1,188 @@
+# 系统默认配置文件
+
+# 服务配置
+services:
+  config_manager:
+    host: "0.0.0.0"
+    port: 8000
+    debug: false
+    
+  website_scanner:
+    host: "0.0.0.0"
+    port: 8001
+    max_concurrent_scans: 10
+    scan_timeout: 300
+    
+  alert_handler:
+    host: "0.0.0.0"
+    port: 8002
+    notification_timeout: 30
+    
+  task_scheduler:
+    host: "0.0.0.0"
+    port: 8003
+    worker_concurrency: 4
+    
+  web_admin:
+    host: "0.0.0.0"
+    port: 3000
+
+# 数据库配置
+database:
+  # MongoDB配置
+  mongodb:
+    host: "localhost"
+    port: 27017
+    database: "compliance_db"
+    username: ""
+    password: ""
+    
+  # Redis配置
+  redis:
+    host: "localhost"
+    port: 6379
+    database: 0
+    password: ""
+    
+  # SQLite配置（用于配置管理）
+  sqlite:
+    path: "data/config.db"
+
+# 第三方API配置
+api_keys:
+  content_check: "your_content_api_key"
+  beian_query: "your_beian_api_key"
+  sms_service: "your_sms_api_key"
+  email_service: "your_email_api_key"
+
+# 扫描配置
+scanner:
+  # 爬虫配置
+  crawler:
+    max_depth: 3
+    max_pages: 50
+    concurrent_requests: 5
+    request_delay: 1
+    user_agent: "ComplianceBot/1.0"
+    timeout: 30
+    
+  # 内容检测配置
+  content_check:
+    text_check_enabled: true
+    image_check_enabled: true
+    sensitive_words_file: "data/sensitive_words.txt"
+    
+  # 备案检测配置
+  beian_check:
+    enabled: true
+    cache_ttl: 86400  # 24小时
+    batch_size: 5
+
+# 告警配置
+alerts:
+  # 通知渠道
+  channels:
+    email:
+      enabled: true
+      smtp_host: "smtp.example.com"
+      smtp_port: 587
+      username: "alerts@example.com"
+      password: "your_email_password"
+      
+    sms:
+      enabled: false
+      provider: "aliyun"
+      
+    webhook:
+      enabled: false
+      url: "https://hooks.example.com/webhook"
+      
+  # 告警规则
+  rules:
+    high_risk_threshold: 80
+    medium_risk_threshold: 60
+    low_risk_threshold: 30
+    
+  # 告警频率限制
+  rate_limit:
+    max_alerts_per_hour: 100
+    duplicate_alert_interval: 3600  # 1小时
+
+# 任务调度配置
+scheduler:
+  # Celery配置
+  celery:
+    broker_url: "redis://localhost:6379/1"
+    result_backend: "redis://localhost:6379/2"
+    task_serializer: "json"
+    result_serializer: "json"
+    accept_content: ["json"]
+    timezone: "Asia/Shanghai"
+    
+  # 定时任务配置
+  periodic_tasks:
+    # 每日扫描任务
+    daily_scan:
+      enabled: true
+      schedule: "0 2 * * *"  # 每天凌晨2点
+      
+    # 清理过期数据
+    cleanup_old_data:
+      enabled: true
+      schedule: "0 3 * * 0"  # 每周日凌晨3点
+      retention_days: 90
+      
+    # 生成报表
+    generate_reports:
+      enabled: true
+      schedule: "0 8 * * 1"  # 每周一早上8点
+
+# 安全配置
+security:
+  # JWT配置
+  jwt:
+    secret_key: "your_jwt_secret_key"
+    algorithm: "HS256"
+    access_token_expire_minutes: 30
+    refresh_token_expire_days: 7
+    
+  # 密码策略
+  password:
+    min_length: 8
+    require_uppercase: true
+    require_lowercase: true
+    require_numbers: true
+    require_special_chars: true
+    
+  # API限流
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 60
+    burst_size: 10
+
+# 日志配置
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_path: "logs/app.log"
+  max_file_size: "10MB"
+  backup_count: 5
+  
+# 监控配置
+monitoring:
+  # 健康检查
+  health_check:
+    enabled: true
+    interval: 30
+    
+  # 性能监控
+  metrics:
+    enabled: true
+    export_interval: 60
+    
+  # 告警阈值
+  thresholds:
+    cpu_usage: 80
+    memory_usage: 85
+    disk_usage: 90
+    response_time: 5000  # 毫秒

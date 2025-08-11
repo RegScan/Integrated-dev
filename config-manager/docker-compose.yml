@@ -1,0 +1,59 @@
+# 配置管理服务独立部署配置
+
+services:
+  # 配置管理API服务
+  config-manager:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/config_manager
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-secret-key-here
+      - ENVIRONMENT=development
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./configs:/app/configs
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # PostgreSQL数据库
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=config_manager
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Redis缓存
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  app-network:
+    external: true
+    name: 7-21-demo_app-network 

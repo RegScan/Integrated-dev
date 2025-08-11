@@ -1,0 +1,157 @@
+# 开发环境配置文件
+# 继承default.yaml，覆盖开发环境特定配置
+
+# 服务配置
+services:
+  config_manager:
+    debug: true
+    
+  website_scanner:
+    max_concurrent_scans: 5
+    scan_timeout: 120
+    
+  alert_handler:
+    notification_timeout: 10
+    
+  task_scheduler:
+    worker_concurrency: 2
+
+# 数据库配置
+database:
+  # MongoDB配置
+  mongodb:
+    host: "localhost"
+    port: 27017
+    database: "compliance_dev"
+    
+  # Redis配置
+  redis:
+    host: "localhost"
+    port: 6379
+    database: 1
+    
+  # SQLite配置
+  sqlite:
+    path: "data/config_dev.db"
+
+# 第三方API配置（开发环境使用测试密钥）
+api_keys:
+  content_check: "dev_content_api_key"
+  beian_query: "dev_beian_api_key"
+  sms_service: "dev_sms_api_key"
+  email_service: "dev_email_api_key"
+
+# 扫描配置（开发环境降低限制）
+scanner:
+  crawler:
+    max_depth: 2
+    max_pages: 10
+    concurrent_requests: 2
+    request_delay: 0.5
+    timeout: 15
+    
+  content_check:
+    text_check_enabled: true
+    image_check_enabled: false  # 开发环境关闭图片检测
+    
+  beian_check:
+    enabled: false  # 开发环境关闭备案检测
+
+# 告警配置（开发环境使用本地邮件）
+alerts:
+  channels:
+    email:
+      enabled: true
+      smtp_host: "localhost"
+      smtp_port: 1025  # MailHog端口
+      username: "dev@localhost"
+      password: ""
+      
+    sms:
+      enabled: false
+      
+    webhook:
+      enabled: false
+      
+  rules:
+    high_risk_threshold: 70
+    medium_risk_threshold: 50
+    low_risk_threshold: 20
+    
+  rate_limit:
+    max_alerts_per_hour: 50
+    duplicate_alert_interval: 1800  # 30分钟
+
+# 任务调度配置
+scheduler:
+  celery:
+    broker_url: "redis://localhost:6379/3"
+    result_backend: "redis://localhost:6379/4"
+    
+  periodic_tasks:
+    daily_scan:
+      enabled: false  # 开发环境关闭定时任务
+      
+    cleanup_old_data:
+      enabled: false
+      
+    generate_reports:
+      enabled: false
+
+# 安全配置（开发环境放宽限制）
+security:
+  jwt:
+    secret_key: "dev_jwt_secret_key_not_for_production"
+    access_token_expire_minutes: 60  # 开发环境延长token有效期
+    
+  password:
+    min_length: 6  # 开发环境降低密码要求
+    require_uppercase: false
+    require_lowercase: true
+    require_numbers: false
+    require_special_chars: false
+    
+  rate_limiting:
+    enabled: false  # 开发环境关闭限流
+
+# 日志配置（开发环境详细日志）
+logging:
+  level: "DEBUG"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s"
+  file_path: "logs/dev.log"
+  
+# 监控配置（开发环境关闭监控）
+monitoring:
+  health_check:
+    enabled: false
+    
+  metrics:
+    enabled: false
+    
+  thresholds:
+    cpu_usage: 95
+    memory_usage: 95
+    disk_usage: 95
+    response_time: 10000
+
+# 开发环境特有配置
+development:
+  # 热重载
+  auto_reload: true
+  
+  # 调试工具
+  debug_toolbar: true
+  
+  # 测试数据
+  load_test_data: true
+  test_data_file: "data/test_data.json"
+  
+  # Mock服务
+  mock_external_apis: true
+  
+  # 开发服务器配置
+  dev_server:
+    host: "127.0.0.1"
+    port: 8000
+    workers: 1
+    reload: true

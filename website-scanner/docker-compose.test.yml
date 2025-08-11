@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # MongoDB 测试数据库
+  mongodb-test:
+    image: mongo:6.0
+    container_name: mongodb-test
+    ports:
+      - "27018:27017"  # 使用不同端口避免冲突
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: test123
+      MONGO_INITDB_DATABASE: test_scanner
+    volumes:
+      - mongodb_test_data:/data/db
+      - ./tests/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - test-network
+
+  # Redis 测试缓存
+  redis-test:
+    image: redis:7-alpine
+    container_name: redis-test
+    ports:
+      - "6380:6379"  # 使用不同端口避免冲突
+    volumes:
+      - redis_test_data:/data
+    networks:
+      - test-network
+
+  # 测试应用
+  website-scanner-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: website-scanner-test
+    environment:
+      - MONGODB_URL=mongodb://admin:test123@mongodb-test:27017/test_scanner?authSource=admin
+      - REDIS_URL=redis://redis-test:6379/0
+      - TESTING=true
+      - DEBUG=true
+    depends_on:
+      - mongodb-test
+      - redis-test
+    volumes:
+      - ./tests:/app/tests
+      - ./logs:/app/logs
+    networks:
+      - test-network
+    command: ["python", "-m", "pytest", "tests/", "-v", "--tb=short"]
+
+volumes:
+  mongodb_test_data:
+  redis_test_data:
+
+networks:
+  test-network:
+    driver: bridge 
