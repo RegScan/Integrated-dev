@@ -120,7 +120,7 @@ python test-services.py
 
 2. 检查网络连接：
    ```bash
-   docker network inspect 7-21-demo_app-network
+   docker network inspect RegScan_app-network
    ```
 
 3. 验证端口状态：

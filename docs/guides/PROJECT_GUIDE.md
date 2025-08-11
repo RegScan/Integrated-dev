@@ -1,4 +1,4 @@
-# 7-21-demo 内容合规检测系统 - 总运行指南
+# RegScan 内容合规检测系统 - 总运行指南
 
 ## 📋 项目概述
 
@@ -57,7 +57,7 @@
 ```bash
 # 1. 克隆项目
 git clone <repository-url>
-cd 7-21-demo
+cd RegScan
 
 # 2. 启动所有服务
 docker-compose up -d
@@ -397,4 +397,4 @@ python run_tests.py --type performance
 ---
 
 **最后更新**: 2025年1月
-**维护者**: 7-21-demo开发团队
+**维护者**: RegScan开发团队

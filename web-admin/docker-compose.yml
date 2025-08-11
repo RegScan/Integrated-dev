@@ -24,4 +24,4 @@ services:
 networks:
   app-network:
     external: true
-    name: 7-21-demo_app-network
+    name: RegScan_app-network
